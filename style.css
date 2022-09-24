@@ -1,0 +1,15 @@
+body {
+    background-color: rgb(79, 148, 168);
+}
+h1 {
+  color: white;
+  text-align: center;
+}
+h4 {
+    color: aquamarine;
+    text-align: center;
+}
+p {
+  font-family: verdana;
+  font-size: 20px;
+}
