@@ -1,5 +1,8 @@
-function myFunc(){
-    alert("You Clicked me");
- }
+console.log('wow, such visitors.');
 
-console.log('hello');
+
+fetch('https://tomx98y9ib.execute-api.us-east-1.amazonaws.com/prod')
+    .then(response => response.json())
+    .then((data) => {
+        document.getElementById('idgoeshere').innerText = data.count
+    })

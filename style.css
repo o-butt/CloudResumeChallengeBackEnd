@@ -1,15 +1,38 @@
 body {
-    background-color: rgb(79, 148, 168);
+    background-color: #393E46;
 }
+
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background-color: #1d1c1e;
+  border-radius: 1rem;
+  min-width: 350px;
+  width: 50%;
+  max-width: 500px;
+  min-height: 700px;
+
+
+}
+
 h1 {
-  color: white;
+  color: #EEEEEE;
   text-align: center;
 }
+
 h4 {
-    color: aquamarine;
+    color: #00ADB5;
     text-align: center;
 }
+
 p {
-  font-family: verdana;
-  font-size: 20px;
-}
+  text-align: center;
+  font-weight: bold;
+  font-family: arial;
+  font-size: 11px;
+  color: #FFB703
+  }
