@@ -1,3 +1,4 @@
 cypress/
+cypress*
 terraform/*
 !terraform/main.tf
