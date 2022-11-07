@@ -35,3 +35,34 @@ resource "aws_dynamodb_table_item" "tf_visitorcounttable_items" {
         }
     EOF
 }
+
+# create role for lambda usage
+resource "aws_iam_role" "tf_LambdaDynamoDBRole" {
+    name = "tf_LambdaDynamoDBRole"
+    assume_role_policy = <<EOF
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "lambda.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }   
+            ]
+        }
+EOF
+}
+
+# create policy for above role (to set permissions for the role)
+
+
+# create lambda function
+resource "aws_lambda_function" "tf_lambdafunctionnamegoeshere" {
+    filename = lambda_function.zip
+    function_name = "tf_lambdafunctionnamegoeshere"
+    role = aws_iam_role.tf_LambdaDynamoDBRole.arn
+    handler = "lambda_function.lambda_handler"
+    runtime = "python3.9"
+}
