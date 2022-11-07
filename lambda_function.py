@@ -6,7 +6,7 @@ import json
 dynamodb = boto3.resource('dynamodb')
 
 # define table to be working on; set to variable "table"
-table = dynamodb.Table('visitorcounttable')
+table = dynamodb.Table('tf_visitorcounttable')
 
 def lambda_handler(event, context):
     response = table.get_item(

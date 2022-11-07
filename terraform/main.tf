@@ -56,9 +56,8 @@ EOF
 }
 
 # create policy for above role (to set permissions for the role)
-resource "aws_iam_role_policy" "tf_LambdaDynamoDBPolicy" {
+resource "aws_iam_policy" "tf_LambdaDynamoDBPolicy" {
     name = "tf_LambdaDynamoDBPolicy"
-    role = aws_iam_role.tf_LambdaDynamoDBRole.id
     policy = jsonencode(
         {
     "Version": "2012-10-17",
@@ -93,6 +92,12 @@ resource "aws_iam_role_policy" "tf_LambdaDynamoDBPolicy" {
 })
 }
 
+# create attachment of the role to the policy
+resource "aws_iam_role_policy_attachment" "tf_LambdaDynamoDBPolicy_attachment" {
+    role = aws_iam_role.tf_LambdaDynamoDBRole.name
+    policy_arn = aws_iam_policy.tf_LambdaDynamoDBPolicy.arn
+}
+
 # create lambda function
 resource "aws_lambda_function" "tf_lambdafunctionnamegoeshere" {
     filename = "lambda_function.zip"
@@ -100,4 +105,56 @@ resource "aws_lambda_function" "tf_lambdafunctionnamegoeshere" {
     role = aws_iam_role.tf_LambdaDynamoDBRole.arn
     handler = "lambda_function.lambda_handler"
     runtime = "python3.9"
+}
+
+# create api gateway (rest api)
+resource "aws_api_gateway_rest_api" "tf_APIGatewayCreatedForLambdaFunction" {
+    name = "tf_APIGatewayCreatedForLambdaFunction"
+    endpoint_configuration {
+      types = ["REGIONAL"]
+    }
+}
+
+# create api gateway resource
+resource "aws_api_gateway_resource" "tf_get" {
+    parent_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.root_resource_id
+    path_part = "GET"
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id 
+}
+
+# create api gateway method
+resource "aws_api_gateway_method" "tf_method" {
+    authorization = "NONE"
+    http_method = "GET"
+    resource_id = aws_api_gateway_resource.tf_get.id
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+}
+
+# create api gateway method integration to lambda
+resource "aws_api_gateway_integration" "tf_integration" {
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    resource_id = aws_api_gateway_resource.tf_get.id
+    http_method = aws_api_gateway_method.tf_method.http_method
+    integration_http_method = "POST"
+    type = "AWS"
+    uri = aws_lambda_function.tf_lambdafunctionnamegoeshere.invoke_arn
+}
+
+# create api gateway method response
+resource "aws_api_gateway_method_response" "tf_method_response_200" {
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    resource_id = aws_api_gateway_resource.tf_get.id
+    http_method = aws_api_gateway_method.tf_method.http_method
+    status_code = "200"
+    response_models = {
+        "application/json" = "Empty"
+    }
+}
+
+# create api gateway method integration response from lambda
+resource "aws_api_gateway_integration_response" "tf_integration_response" {
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    resource_id = aws_api_gateway_resource.tf_get.id
+    http_method = aws_api_gateway_method.tf_method.http_method
+    status_code = aws_api_gateway_method_response.tf_method_response_200.status_code
 }
