@@ -56,12 +56,47 @@ EOF
 }
 
 # create policy for above role (to set permissions for the role)
-
+resource "aws_iam_role_policy" "tf_LambdaDynamoDBPolicy" {
+    name = "tf_LambdaDynamoDBPolicy"
+    role = aws_iam_role.tf_LambdaDynamoDBRole.id
+    policy = jsonencode(
+        {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:us-east-1:995961725945:table/tf_visitorcounttable"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:us-east-1:995961725945:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "*"
+        }
+    ]
+})
+}
 
 # create lambda function
 resource "aws_lambda_function" "tf_lambdafunctionnamegoeshere" {
-    filename = lambda_function.zip
-    function_name = "tf_lambdafunctionnamegoeshere"
+    filename = "lambda_function.zip"
+    function_name = "tf_LambdaFunctionNameGoesHere"
     role = aws_iam_role.tf_LambdaDynamoDBRole.arn
     handler = "lambda_function.lambda_handler"
     runtime = "python3.9"
