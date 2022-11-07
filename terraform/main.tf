@@ -1,3 +1,4 @@
+## GENERAL
 # initial terraform block to set the required provider, source and version
 terraform {
     required_providers {
@@ -13,6 +14,7 @@ provider "aws" {
     region = "us-east-1"
 }
 
+## DYNAMODB
 # create the dynamodb table
 resource "aws_dynamodb_table" "tf_visitorcounttable" {
     name = "tf_visitorcounttable"
@@ -36,6 +38,7 @@ resource "aws_dynamodb_table_item" "tf_visitorcounttable_items" {
     EOF
 }
 
+## LAMBDA
 # create role for lambda usage
 resource "aws_iam_role" "tf_LambdaDynamoDBRole" {
     name = "tf_LambdaDynamoDBRole"
@@ -107,6 +110,7 @@ resource "aws_lambda_function" "tf_lambdafunctionnamegoeshere" {
     runtime = "python3.9"
 }
 
+## API GATEWAY
 # create api gateway (rest api)
 resource "aws_api_gateway_rest_api" "tf_APIGatewayCreatedForLambdaFunction" {
     name = "tf_APIGatewayCreatedForLambdaFunction"
