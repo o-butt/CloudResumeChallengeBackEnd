@@ -156,7 +156,7 @@ resource "aws_api_gateway_integration" "tf_integration" {
     integration_http_method = "POST"
     type = "AWS"
     # uri = aws_lambda_function.tf_lambdafunctionnamegoeshere.invoke_arn
-    uri = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:995961725945:function:tf_LambdaFunctionNameGoesHere/invocations"
+    uri = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:995961725945:function:tf_LambdaFunctionNameGoesHere/invocations"
 }
 
 # create api gateway method response
