@@ -110,6 +110,20 @@ resource "aws_lambda_function" "tf_lambdafunctionnamegoeshere" {
     runtime = "python3.9"
 }
 
+# create lambda permissions for api gateway
+resource "aws_lambda_permission" "tf_apigw_lambda" {
+    statement_id = "AllowExecutionFromAPIGateway"
+    action = "lambda:InvokeFunction"
+    function_name = aws_lambda_function.tf_lambdafunctionnamegoeshere.function_name
+    principal = "apigateway.amazonaws.com"
+    source_arn = "arn:aws:execute-api:us-east-1:995961725945:${aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id}/*/${aws_api_gateway_method.tf_method.http_method}${aws_api_gateway_resource.tf_get.path}"
+
+    depends_on = [
+      aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction
+    ]
+}
+
+
 ## API GATEWAY
 # create api gateway (rest api)
 resource "aws_api_gateway_rest_api" "tf_APIGatewayCreatedForLambdaFunction" {
@@ -141,7 +155,8 @@ resource "aws_api_gateway_integration" "tf_integration" {
     http_method = aws_api_gateway_method.tf_method.http_method
     integration_http_method = "POST"
     type = "AWS"
-    uri = aws_lambda_function.tf_lambdafunctionnamegoeshere.invoke_arn
+    # uri = aws_lambda_function.tf_lambdafunctionnamegoeshere.invoke_arn
+    uri = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:995961725945:function:tf_LambdaFunctionNameGoesHere/invocations"
 }
 
 # create api gateway method response
@@ -162,3 +177,4 @@ resource "aws_api_gateway_integration_response" "tf_integration_response" {
     http_method = aws_api_gateway_method.tf_method.http_method
     status_code = aws_api_gateway_method_response.tf_method_response_200.status_code
 }
+
