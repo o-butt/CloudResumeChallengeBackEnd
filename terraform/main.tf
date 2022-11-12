@@ -108,6 +108,7 @@ resource "aws_lambda_function" "tf_lambdafunctionnamegoeshere" {
     role = aws_iam_role.tf_LambdaDynamoDBRole.arn
     handler = "lambda_function.lambda_handler"
     runtime = "python3.9"
+    source_code_hash = filebase64sha256("lambda_function.zip")
 }
 
 # create lambda permissions for api gateway
@@ -178,3 +179,30 @@ resource "aws_api_gateway_integration_response" "tf_integration_response" {
     status_code = aws_api_gateway_method_response.tf_method_response_200.status_code
 }
 
+# create api gateway deployment
+resource "aws_api_gateway_deployment" "tf_apigw_deployment" {
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+
+    lifecycle {
+      create_before_destroy = true
+    }
+}
+
+# create api gateway stage
+resource "aws_api_gateway_stage" "tf_stage" {
+    deployment_id = aws_api_gateway_deployment.tf_apigw_deployment.id
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    stage_name = "prod"
+}
+
+# # create api gateway method settings
+# resource "aws_api_gateway_method_settings" "tf_apigw_method_settings" {
+#     rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+#     stage_name = aws_api_gateway_stage.tf_stage.id
+#     method_path = "*/*"
+
+#     settings {
+#         metrics_enabled = true
+#         logging_level = "INFO"
+#     }
+# }
