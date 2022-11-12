@@ -33,7 +33,7 @@ resource "aws_dynamodb_table_item" "tf_visitorcounttable_items" {
     item = <<EOF
         {
             "record_id":{"S": "lol"},
-            "record_count":{"N": "1"}
+            "record_count":{"N": "14"}
         }
     EOF
 }
@@ -179,9 +179,68 @@ resource "aws_api_gateway_integration_response" "tf_integration_response" {
     status_code = aws_api_gateway_method_response.tf_method_response_200.status_code
 }
 
+# create api gateway method options
+resource "aws_api_gateway_method" "tf_method_options" {
+    rest_api_id      = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    resource_id      = aws_api_gateway_resource.tf_get.id
+    http_method      = "OPTIONS"
+    authorization    = "NONE"
+    api_key_required = false
+}
+
+# create api gateway method options response
+resource "aws_api_gateway_method_response" "tf_options_method_response" {
+    rest_api_id  = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    resource_id  = aws_api_gateway_resource.tf_get.id
+    http_method = aws_api_gateway_method.tf_method_options.http_method
+    status_code = "200"
+    response_models = {
+      "application/json" = "Empty"
+    }
+    response_parameters = {
+      "method.response.header.Access-Control-Allow-Headers" = true
+      "method.response.header.Access-Control-Allow-Methods" = true
+      "method.response.header.Access-Control-Allow-Origin"  = true
+    }
+}
+
+# create api gateway options integration
+resource "aws_api_gateway_integration" "tf_options_integration" {
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    resource_id = aws_api_gateway_resource.tf_get.id
+    http_method = "OPTIONS"
+    type  = "MOCK"
+    passthrough_behavior = "WHEN_NO_MATCH"
+    request_templates = {
+      "application/json" : "{\"statusCode\": 200}"
+    }
+}
+
+#create api gateway options integration response
+resource "aws_api_gateway_integration_response" "tf_options_integration_response" {
+    rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+    resource_id = aws_api_gateway_resource.tf_get.id
+    http_method = aws_api_gateway_integration.tf_options_integration.http_method
+    status_code = "200"
+    response_parameters = {
+      "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+      "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+}
+
 # create api gateway deployment
 resource "aws_api_gateway_deployment" "tf_apigw_deployment" {
     rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
+
+    triggers = {
+        redeployment = sha1(jsonencode([
+            aws_api_gateway_resource.tf_get,
+            aws_api_gateway_method.tf_method,
+            aws_api_gateway_method.tf_method_options,
+            aws_api_gateway_integration.tf_integration
+            ]))
+    }
 
     lifecycle {
       create_before_destroy = true
@@ -194,15 +253,3 @@ resource "aws_api_gateway_stage" "tf_stage" {
     rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
     stage_name = "prod"
 }
-
-# # create api gateway method settings
-# resource "aws_api_gateway_method_settings" "tf_apigw_method_settings" {
-#     rest_api_id = aws_api_gateway_rest_api.tf_APIGatewayCreatedForLambdaFunction.id
-#     stage_name = aws_api_gateway_stage.tf_stage.id
-#     method_path = "*/*"
-
-#     settings {
-#         metrics_enabled = true
-#         logging_level = "INFO"
-#     }
-# }
