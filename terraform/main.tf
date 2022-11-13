@@ -166,9 +166,14 @@ resource "aws_api_gateway_method_response" "tf_method_response_200" {
     resource_id = aws_api_gateway_resource.tf_get.id
     http_method = aws_api_gateway_method.tf_method.http_method
     status_code = "200"
+    
     response_models = {
         "application/json" = "Empty"
     }
+    response_parameters = {
+        "method.response.header.Access-Control-Allow-Origin"  = true
+    }
+
 }
 
 # create api gateway method integration response from lambda
@@ -177,6 +182,10 @@ resource "aws_api_gateway_integration_response" "tf_integration_response" {
     resource_id = aws_api_gateway_resource.tf_get.id
     http_method = aws_api_gateway_method.tf_method.http_method
     status_code = aws_api_gateway_method_response.tf_method_response_200.status_code
+
+    response_parameters = {
+        "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    }
 }
 
 # create api gateway method options
@@ -224,7 +233,7 @@ resource "aws_api_gateway_integration_response" "tf_options_integration_response
     status_code = "200"
     response_parameters = {
       "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+      "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
       "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
 }
