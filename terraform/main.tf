@@ -33,7 +33,7 @@ resource "aws_dynamodb_table_item" "tf_visitorcounttable_items" {
     item = <<EOF
         {
             "record_id":{"S": "lol"},
-            "record_count":{"N": "14"}
+            "record_count":{"N": "551"}
         }
     EOF
 }
